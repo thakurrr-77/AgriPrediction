@@ -6,80 +6,81 @@
     <title>PricePredict | Way2Agribusiness</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Price<span class="accent">Predict</span></h1>
-            <p>Smart Agribusiness Forecasting for Smarter Decisions</p>
+            <h1>Agri<span class="accent">Price</span></h1>
+            <p>Advanced Price Forecasting for Agribusiness Growth</p>
         </header>
 
-        <!-- Configuration Card -->
-        <section class="card prediction-form">
+        <!-- Configuration Pill Form -->
+        <section class="prediction-form">
             <form action="/predict" method="post" class="predict-form">
                 <div class="input-group">
-                    <label for="horizon">Forecast Window (Months)</label>
+                    <label for="horizon">Forecast Window</label>
                     <input type="number" name="horizon" id="horizon" value="{{ latest_forecast.horizon if latest_forecast else 12 }}" min="1" max="24">
+                    <span style="color: #666; font-size: 0.9rem;">Months</span>
                 </div>
-                <button type="submit" class="cta-button">
-                    <span>Generate Forecast</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                </button>
+                <button type="submit" class="cta-button">🚀 Generate Prediction</button>
             </form>
         </section>
 
         {% if latest_forecast %}
-        <!-- Current Forecast Section -->
-        <div class="current-forecast">
-            <div class="card">
-                <h2>📊 Analysis for {{ latest_forecast.timestamp }}</h2>
-                <div class="chart-wrapper">
-                    <canvas id="forecastChart"></canvas>
-                </div>
-                
-                <div class="forecast-details">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Predictive Month</th>
-                                <th>Forecasted Price (INR)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in latest_forecast.forecast %}
-                            <tr>
-                                <td>{{ item.date }}</td>
-                                <td class="price-cell">₹ {{ "{:,.2f}".format(item.price) }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <!-- Analysis Results Card -->
+        <div class="card fade-in">
+            <h2>📊 Analysis for {{ latest_forecast.timestamp }}</h2>
+            <div class="chart-wrapper">
+                <canvas id="forecastChart"></canvas>
+            </div>
+            
+            <div class="forecast-details">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Forecast Month</th>
+                            <th>Expected Unit Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in latest_forecast.forecast %}
+                        <tr>
+                            <td>{{ item.date }}</td>
+                            <td class="price-cell">₹{{ "{:,.2f}".format(item.price) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
         {% endif %}
 
         <!-- History Section -->
         <section class="prediction-history">
-            <h3>Recent Predictions</h3>
+            <h3>Recent Activity</h3>
             <div class="history-grid">
                 {% if history %}
                     {% for item in history|reverse %}
                     <div class="history-card">
                         <span class="history-date">{{ item.timestamp }}</span>
-                        <div class="history-info">
-                            <span class="months">{{ item.horizon }} Months Window</span>
-                        </div>
+                        <span class="months">{{ item.horizon }} Months Forecast</span>
+                        
                         <div class="history-stats">
-                            <span>High: <span class="stat-val">₹ {{ "{:,.0f}".format(item.forecast | map(attribute='price') | max) }}</span></span>
-                            <span>Low: <span class="stat-val">₹ {{ "{:,.0f}".format(item.forecast | map(attribute='price') | min) }}</span></span>
+                            <div class="stat">
+                                <span class="stat-label">Peak Price</span>
+                                <span class="stat-val">₹{{ "{:,.0f}".format(item.forecast | map(attribute='price') | max) }}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Floor Price</span>
+                                <span class="stat-val">₹{{ "{:,.0f}".format(item.forecast | map(attribute='price') | min) }}</span>
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
                 {% else %}
-                    <div class="card" style="text-align: center; color: var(--text-muted);">
-                        <p>No historical data available. Run your first prediction above.</p>
+                    <div class="card" style="text-align: center; color: #999; padding: 2rem;">
+                        <p>No historical predictions found. Generate one to get started.</p>
                     </div>
                 {% endif %}
             </div>
@@ -97,48 +98,44 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Expected Price',
+                    label: 'Predicted Value (INR)',
                     data: data,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: '#2e7d32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.05)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: '#10b981',
-                    pointBorderWidth: 2,
-                    borderWidth: 3
+                    pointBorderColor: '#2e7d32',
+                    pointBorderWidth: 3,
+                    borderWidth: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    intersect: false,
-                    mode: 'index',
-                },
                 scales: {
                     y: {
                         beginAtZero: false,
-                        grid: { color: '#f1f5f9' },
+                        grid: { color: '#f0f0f0' },
                         ticks: { 
-                            color: '#64748b',
+                            font: { family: 'Outfit', size: 12 },
                             callback: function(value) { return '₹' + value.toLocaleString(); }
                         }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: '#64748b' }
+                        ticks: { font: { family: 'Outfit', size: 12 } }
                     }
                 },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#1e293b',
-                        padding: 12,
-                        titleFont: { size: 14, weight: 'bold' },
-                        bodyFont: { size: 13 },
+                        backgroundColor: '#1b1b1b',
+                        titleFont: { family: 'Outfit', size: 14 },
+                        bodyFont: { family: 'Outfit', size: 13 },
+                        padding: 15,
                         displayColors: false,
                         callbacks: {
                             label: function(context) {

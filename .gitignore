@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Project Specific
+models/
+history.json
+
+# Data (Optional - remove if you want to commit data)
+# price_data.csv
+
+# OS
+.DS_Store
+Thumbs.db

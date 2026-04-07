@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Way2Agribusiness Price Forecasting</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-container">
+        <header>
+            <h1>🌾 AgriPrice <span class="accent">Predictor</span></h1>
+            <p>Real-time Agribusiness Price Forecasting with SARIMA</p>
+        </header>
+
+        <section class="prediction-form">
+            <form action="/predict" method="post" class="predict-form">
+                <div class="input-group">
+                    <label for="horizon">Forecast Window (Months):</label>
+                    <input type="number" name="horizon" id="horizon" value="12" min="1" max="24">
+                </div>
+                <button type="submit" class="cta-button">🚀 Generate New Forecast</button>
+            </form>
+        </section>
+
+        {% if latest_forecast %}
+        <section class="current-forecast fade-in">
+            <h2>Current Forecast: {{ latest_forecast.timestamp }}</h2>
+            <div class="chart-wrapper">
+                <canvas id="forecastChart"></canvas>
+            </div>
+            <div class="forecast-details">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th>Predicted Price (Avg)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in latest_forecast.forecast %}
+                        <tr>
+                            <td>{{ item.date }}</td>
+                            <td class="price-cell">₹ {{ item.price }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="prediction-history">
+            <h3>📜 Prediction History</h3>
+            <div class="history-grid">
+                {% if history %}
+                    {% for item in history|reverse %}
+                    <div class="history-card">
+                        <span class="history-date">{{ item.timestamp }}</span>
+                        <span class="history-meta">Window: {{ item.horizon }} Months</span>
+                        <div class="mini-stats">
+                            <span>High: ₹ {{ item.forecast | map(attribute='price') | max }}</span>
+                            <span>Low: ₹ {{ item.forecast | map(attribute='price') | min }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="no-history">No past predictions available. Start by generating one above!</p>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <script>
+        {% if latest_forecast %}
+        const ctx = document.getElementById('forecastChart').getContext('2d');
+        const labels = {{ latest_forecast.forecast | map(attribute='date') | list | tojson }};
+        const data = {{ latest_forecast.forecast | map(attribute='price') | list | tojson }};
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Price Forecast (INR)',
+                    data: data,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#4CAF50',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#fff' }
+                    },
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        ticks: { color: '#fff' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#fff', font: { family: 'Outfit' } } }
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

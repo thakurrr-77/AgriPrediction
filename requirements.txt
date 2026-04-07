@@ -1,0 +1,18 @@
+# Core Data Science
+pandas
+numpy
+matplotlib
+seaborn
+statsmodels
+scikit-learn
+joblib
+
+# API Ecosystem
+fastapi
+uvicorn
+jinja2
+python-multipart
+
+# Notebook Utilities
+nbformat
+ipykernel

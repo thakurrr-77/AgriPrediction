@@ -38,7 +38,9 @@ def get_model():
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     history = load_history()
-    return templates.TemplateResponse("index.html", {"request": request, "history": history})
+    return templates.TemplateResponse(
+        request=request, name="index.html", context={"history": history}
+    )
 
 @app.post("/predict")
 async def predict_price(request: Request, horizon: int = Form(12)):
@@ -61,11 +63,14 @@ async def predict_price(request: Request, horizon: int = Form(12)):
     
     save_history(prediction_data)
     
-    return templates.TemplateResponse("index.html", {
-        "request": request, 
-        "history": load_history(),
-        "latest_forecast": prediction_data
-    })
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "history": load_history(),
+            "latest_forecast": prediction_data
+        }
+    )
 
 if __name__ == "__main__":
     import uvicorn

@@ -3,71 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Way2Agribusiness Price Forecasting</title>
+    <title>PricePredict | Way2Agribusiness</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="glass-container">
+    <div class="container">
         <header>
-            <h1>🌾 AgriPrice <span class="accent">Predictor</span></h1>
-            <p>Real-time Agribusiness Price Forecasting with SARIMA</p>
+            <h1>Price<span class="accent">Predict</span></h1>
+            <p>Smart Agribusiness Forecasting for Smarter Decisions</p>
         </header>
 
-        <section class="prediction-form">
+        <!-- Configuration Card -->
+        <section class="card prediction-form">
             <form action="/predict" method="post" class="predict-form">
                 <div class="input-group">
-                    <label for="horizon">Forecast Window (Months):</label>
-                    <input type="number" name="horizon" id="horizon" value="12" min="1" max="24">
+                    <label for="horizon">Forecast Window (Months)</label>
+                    <input type="number" name="horizon" id="horizon" value="{{ latest_forecast.horizon if latest_forecast else 12 }}" min="1" max="24">
                 </div>
-                <button type="submit" class="cta-button">🚀 Generate New Forecast</button>
+                <button type="submit" class="cta-button">
+                    <span>Generate Forecast</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
             </form>
         </section>
 
         {% if latest_forecast %}
-        <section class="current-forecast fade-in">
-            <h2>Current Forecast: {{ latest_forecast.timestamp }}</h2>
-            <div class="chart-wrapper">
-                <canvas id="forecastChart"></canvas>
+        <!-- Current Forecast Section -->
+        <div class="current-forecast">
+            <div class="card">
+                <h2>📊 Analysis for {{ latest_forecast.timestamp }}</h2>
+                <div class="chart-wrapper">
+                    <canvas id="forecastChart"></canvas>
+                </div>
+                
+                <div class="forecast-details">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Predictive Month</th>
+                                <th>Forecasted Price (INR)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in latest_forecast.forecast %}
+                            <tr>
+                                <td>{{ item.date }}</td>
+                                <td class="price-cell">₹ {{ "{:,.2f}".format(item.price) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="forecast-details">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Predicted Price (Avg)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in latest_forecast.forecast %}
-                        <tr>
-                            <td>{{ item.date }}</td>
-                            <td class="price-cell">₹ {{ item.price }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        </div>
         {% endif %}
 
+        <!-- History Section -->
         <section class="prediction-history">
-            <h3>📜 Prediction History</h3>
+            <h3>Recent Predictions</h3>
             <div class="history-grid">
                 {% if history %}
                     {% for item in history|reverse %}
                     <div class="history-card">
                         <span class="history-date">{{ item.timestamp }}</span>
-                        <span class="history-meta">Window: {{ item.horizon }} Months</span>
-                        <div class="mini-stats">
-                            <span>High: ₹ {{ item.forecast | map(attribute='price') | max }}</span>
-                            <span>Low: ₹ {{ item.forecast | map(attribute='price') | min }}</span>
+                        <div class="history-info">
+                            <span class="months">{{ item.horizon }} Months Window</span>
+                        </div>
+                        <div class="history-stats">
+                            <span>High: <span class="stat-val">₹ {{ "{:,.0f}".format(item.forecast | map(attribute='price') | max) }}</span></span>
+                            <span>Low: <span class="stat-val">₹ {{ "{:,.0f}".format(item.forecast | map(attribute='price') | min) }}</span></span>
                         </div>
                     </div>
                     {% endfor %}
                 {% else %}
-                    <p class="no-history">No past predictions available. Start by generating one above!</p>
+                    <div class="card" style="text-align: center; color: var(--text-muted);">
+                        <p>No historical data available. Run your first prediction above.</p>
+                    </div>
                 {% endif %}
             </div>
         </section>
@@ -84,34 +97,55 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Price Forecast (INR)',
+                    label: 'Expected Price',
                     data: data,
-                    borderColor: '#4CAF50',
-                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 5,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: '#4CAF50',
+                    pointBorderColor: '#10b981',
+                    pointBorderWidth: 2,
                     borderWidth: 3
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
                 scales: {
                     y: {
                         beginAtZero: false,
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        ticks: { color: '#fff' }
+                        grid: { color: '#f1f5f9' },
+                        ticks: { 
+                            color: '#64748b',
+                            callback: function(value) { return '₹' + value.toLocaleString(); }
+                        }
                     },
                     x: {
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        ticks: { color: '#fff' }
+                        grid: { display: false },
+                        ticks: { color: '#64748b' }
                     }
                 },
                 plugins: {
-                    legend: { labels: { color: '#fff', font: { family: 'Outfit' } } }
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1e293b',
+                        padding: 12,
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Price: ₹' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
                 }
             }
         });
